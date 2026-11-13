@@ -1,5 +1,8 @@
 # Playwright Title Crawler (Apify Actor)
 
+[![Forks](https://img.shields.io/github/forks/MokuLakshithReddy/Scrapper?style=flat-square)](https://github.com/MokuLakshithReddy/Scrapper/forks) [![Open Issues](https://img.shields.io/github/issues/MokuLakshithReddy/Scrapper?style=flat-square)](https://github.com/MokuLakshithReddy/Scrapper/issues)
+
+
 A small Apify Actor starter that crawls a bounded set of web pages with **Python, Playwright, and the Apify request queue**, then stores each page's URL and document title in the default dataset.
 
 It is intentionally a minimal crawler example—not a general-purpose extraction platform.
