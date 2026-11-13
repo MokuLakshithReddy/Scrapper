@@ -1,69 +1,76 @@
-## Python Playwright template
+# Playwright Title Crawler (Apify Actor)
 
-<!-- This is an Apify template readme -->
+A small Apify Actor starter that crawls a bounded set of web pages with **Python, Playwright, and the Apify request queue**, then stores each page's URL and document title in the default dataset.
 
-## Included features
+It is intentionally a minimal crawler example—not a general-purpose extraction platform.
 
-- **[Apify SDK](https://docs.apify.com/sdk/python/)** for Python - a toolkit for building Apify [Actors](https://apify.com/actors) and scrapers in Python
-- **[Input schema](https://docs.apify.com/platform/actors/development/input-schema)** - define and easily validate a schema for your Actor's input
-- **[Request queue](https://docs.apify.com/sdk/python/docs/concepts/storages#working-with-request-queues)** - queues into which you can put the URLs you want to scrape
-- **[Dataset](https://docs.apify.com/sdk/python/docs/concepts/storages#working-with-datasets)** - store structured data where each object stored has the same attributes
-- **[Playwright](https://pypi.org/project/playwright/)** - a browser automation library
+[![Python](https://img.shields.io/badge/Python-3-blue?logo=python)](https://www.python.org/)
+[![Playwright](https://img.shields.io/badge/Browser-Playwright-2EAD33?logo=playwright)](https://playwright.dev/python/)
+[![Apify SDK](https://img.shields.io/badge/Platform-Apify-00AEEF)](https://docs.apify.com/sdk/python)
+[![Stars](https://img.shields.io/github/stars/MokuLakshithReddy/Scrapper?style=flat-square)](https://github.com/MokuLakshithReddy/Scrapper/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/MokuLakshithReddy/Scrapper?style=flat-square)](https://github.com/MokuLakshithReddy/Scrapper/commits/main)
 
-## Resources
+## What it does
 
-- [Playwright for web scraping in 2023](https://blog.apify.com/how-to-scrape-the-web-with-playwright-ece1ced75f73/)
-- [Scraping single-page applications with Playwright](https://blog.apify.com/scraping-single-page-applications-with-playwright/)
-- [How to scale Puppeteer and Playwright](https://blog.apify.com/how-to-scale-puppeteer-and-playwright/)
-- [Integration with Zapier](https://apify.com/integrations), Make, GitHub, Google Drive and other apps
-- [Video guide on getting data using Apify API](https://www.youtube.com/watch?v=ViYYDHSBAKM)
-- A short guide on how to build web scrapers using code templates:
+- Accepts one or more starting URLs from the Actor input.
+- Adds URLs to an Apify request queue and opens pages in headless Chromium through Playwright.
+- Follows links while the configured crawl depth allows it.
+- Extracts the page URL and title and pushes each record to the default dataset.
+- Logs extraction failures and marks processed requests as handled.
 
-[web scraper template](https://www.youtube.com/watch?v=u-i-Korzf8w)
+## Crawl flow
 
+~~~mermaid
+flowchart TD
+    A["Actor input: start_urls + max_depth"] --> B["Apify request queue"]
+    B --> C["Playwright / Chromium page"]
+    C --> D["Read page title and URL"]
+    C --> E{"Depth below max_depth?"}
+    E -->|Yes| F["Enqueue discovered HTTP(S) links"]
+    F --> B
+    E -->|No| G["Skip link expansion"]
+    D --> H["Push record to Apify dataset"]
+    G --> H
+~~~
 
-## Getting started
+## Current limits
 
-For complete information [see this article](https://docs.apify.com/platform/actors/development#build-actor-at-apify-console). In short, you will:
+| Setting | Current behavior |
+|---|---|
+| Maximum handled requests | **10 per actor run** (MAX_REQUESTS_PER_CRAWL) |
+| Default starting URL | https://apify.com when omitted |
+| Default crawl depth | 1 |
+| Extracted fields | url, title |
+| Browser | Playwright Chromium |
 
-1. Build the Actor
-2. Run the Actor
+The crawler does not currently extract article bodies, images, prices, or arbitrary CSS-selected fields. It also does not publish a throughput benchmark; runtime depends on the target sites and network conditions.
 
-## Pull the Actor for local development
+## Run locally
 
-If you would like to develop locally, you can pull the existing Actor from Apify console using Apify CLI:
+Requirements: Python 3.10+ and a Playwright-compatible Chromium installation.
 
-1. Install `apify-cli`
+~~~bash
+python -m venv .venv
+pip install -r requirements.txt
+playwright install chromium
+apify run
+~~~
 
-    **Using Homebrew**
+Configure the Actor using .actor/input_schema.json:
 
-    ```bash
-    brew install apify-cli
-    ```
+~~~json
+{
+  "start_urls": [{ "url": "https://example.com" }],
+  "max_depth": 1
+}
+~~~
 
-    **Using NPM**
+See my_actor/main.py for the crawl loop and [Apify Python SDK documentation](https://docs.apify.com/sdk/python) for Actor runtime details.
 
-    ```bash
-    npm -g install apify-cli
-    ```
+## Why it matters
 
-2. Pull the Actor by its unique `<ActorId>`, which is one of the following:
-    - unique name of the Actor to pull (e.g. "apify/hello-world")
-    - or ID of the Actor to pull (e.g. "E2jjCZBezvAZnX8Rb")
+A compact, inspectable starting point for learning how a browser-driven crawler can combine a request queue, bounded link discovery, and structured dataset output.
 
-    You can find both by clicking on the Actor title at the top of the page, which will open a modal containing both Actor unique name and Actor ID.
+## License
 
-    This command will copy the Actor into the current directory on your local machine.
-
-    ```bash
-    apify pull <ActorId>
-    ```
-
-## Documentation reference
-
-To learn more about Apify and Actors, take a look at the following resources:
-
-- [Apify SDK for JavaScript documentation](https://docs.apify.com/sdk/js)
-- [Apify SDK for Python documentation](https://docs.apify.com/sdk/python)
-- [Apify Platform documentation](https://docs.apify.com/platform)
-- [Join our developer community on Discord](https://discord.com/invite/jyEM2PRvMU)
+See the repository license file if present.
